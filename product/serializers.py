@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from django.db.models import Avg
 from product.models import NewProduct, Category
 
 
@@ -8,11 +8,21 @@ class ProductSerializer(serializers.ModelSerializer):
         model = NewProduct
         fields = '__all__'
 
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['rating'] = instance.ratings.aggregate(Avg('mark'))
+        return repr
+
 
 class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewProduct
         fields = ('name', 'price', 'image')
+
+        def to_representation(self, instance):
+            repr = super().to_representation(instance)
+            repr['rating'] = instance.ratings.aggregate(Avg('mark'))
+            return repr
 
 
 class CategorySerializer(serializers.ModelSerializer):
